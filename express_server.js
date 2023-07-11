@@ -8,14 +8,24 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+
 //Says hello to the client
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
+
 //Sends request data 
 app.get("/urls", (req, res) => {
-  res.render('urls_index')
+  const templateVars = { urls: urlDatabase };
+  res.render('urls_index', templateVars)
 })
+
+//Id request
+app.get("/urls/:id", (req, res, urlDatabase) => {
+  const templateVars = { id: req.params.id, longURL: urlDatabase.id };
+  res.render("urls_show", templateVars);
+});
 
 
 //will send the ulrDatabase object to the client
