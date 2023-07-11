@@ -12,6 +12,12 @@ const urlDatabase = {
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
+//Sends request data 
+app.get("/urls", (req, res) => {
+  res.render('urls_index')
+})
+
+
 //will send the ulrDatabase object to the client
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
