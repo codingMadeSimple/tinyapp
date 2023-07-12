@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const PORT = 8000; // default port 8080
+const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
 
@@ -26,24 +26,20 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
-
+//Deletes a set of urls
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
-  delete urlDatabase[id];
-  console.log(urlDatabase);
-
+  console.log(urlDatabase[id])
+  delete(urlDatabase[id])
+  console.log(urlDatabase)
   res.redirect('/urls');
 });
 
+// Saves a shortURL 
 app.post("/urls", (req, res) => {
-  // Saves a shortURL 
   const longURL = req.body.longURL;
   const id = generateRandomString(6);
-  //Adds the key value pair shortURL : longURL to the urlDatabase object
   urlDatabase[id] = longURL;
-  console.log(id);
-  console.log(urlDatabase);
-  // res.send("Nice addition")
   res.redirect(`urls/${id}`);
 });
 
@@ -67,9 +63,20 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+app.get("/u/:id", (req, res) => {
+  const id = req.params.id;
+  const longURL = urlDatabase[id];
+  res.redirect(longURL);
+});
+
+
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+
+
 
 
 //I spent way to long on this assignment, this was taken from slingacademy.com
