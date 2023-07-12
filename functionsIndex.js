@@ -1,5 +1,5 @@
 
 
-const loopObject (Object) => {
+function loopObject  function() {
 
 }

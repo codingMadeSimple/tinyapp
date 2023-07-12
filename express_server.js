@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = 8000; // default port 8080
 
 app.set("view engine", "ejs");
 
@@ -28,35 +28,31 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  // console.log(req.params.id)
-  // console.log(res)
-  // console.log(id)
-  // console.log(res)
-  console.log(req)
-  // console.log(urlDatabase)
-  // delete urlDatabase[shortURL]
-  // for(const short in urlDatabase){
-  //   console.log(short)
-  // }
+  const id = req.params.id;
+  delete urlDatabase[id];
+  console.log(urlDatabase);
 
-  // console.log(typeof(urlDatabase))
-  // console.log(urlDatabase)
-  res.render('urls_index')
-})
+  res.redirect('/urls');
+});
 
 app.post("/urls", (req, res) => {
   // Saves a shortURL 
-  const shortURL = generateRandomString(6);
+  const longURL = req.body.longURL;
+  const id = generateRandomString(6);
   //Adds the key value pair shortURL : longURL to the urlDatabase object
-  urlDatabase[shortURL] = req.body.longURL;
-  console.log(urlDatabase)
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  urlDatabase[id] = longURL;
+  console.log(id);
+  console.log(urlDatabase);
+  // res.send("Nice addition")
+  res.redirect(`urls/${id}`);
 });
 
 //Id request
-app.get("/urls/:id", (req, res, urlDatabase) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase.id };
-  console.log(req.params);
+app.get("/urls/:id", (req, res) => {
+  const id = req.params.id;
+  const longURL = urlDatabase[id];
+  console.log(longURL);
+  const templateVars = { id, longURL };
   res.render("urls_show", templateVars);
 });
 
@@ -87,6 +83,5 @@ const generateRandomString = (length) => {
   }
   return result;
 };
-
 
 
