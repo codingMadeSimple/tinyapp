@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
-const PORT = 8080; // default port 8080
-
+const PORT = 8000; // default port 8080
+const morgan = require('morgan')
 app.set("view engine", "ejs");
 
 const urlDatabase = {
@@ -10,6 +10,7 @@ const urlDatabase = {
 };
 
 app.use(express.urlencoded({ extended: true }));
+app.use(morgan('dev'));
 
 //Says hello to the client
 app.get("/", (req, res) => {
@@ -26,9 +27,11 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
+
 //Deletes a set of urls
 app.post("/urls/:id/delete", (req, res) => {
   const id = req.params.id;
+  console.log(id)
   console.log(urlDatabase[id])
   delete(urlDatabase[id])
   console.log(urlDatabase)
@@ -38,6 +41,7 @@ app.post("/urls/:id/delete", (req, res) => {
 // Saves a shortURL 
 app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
+
   const id = generateRandomString(6);
   urlDatabase[id] = longURL;
   res.redirect(`urls/${id}`);
@@ -52,6 +56,16 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+//Edit's a URL
+app.post("/urls/:id", (req, res) => {
+  console.log(res.req.url)
+  const id = res.req.url;
+
+  if(id)
+
+  console.log(urlDatabase)
+  res.redirect(id);
+});
 
 //will send the ulrDatabase object to the client
 app.get("/urls.json", (req, res) => {
