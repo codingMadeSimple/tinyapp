@@ -1,26 +1,27 @@
 const express = require("express");
 const app = express();
-const PORT = 8000; // default port 8080
-const morgan = require('morgan')
+const PORT = 8080; // default port 8080
+// const morgan = require('morgan')
+// const cookieParser = require('cookie-parser')
 app.set("view engine", "ejs");
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
-
+//Imported modules
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev'));
+// app.use(morgan('dev'));
+
 
 //Says hello to the client
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-//Sends request data 
-app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
-  res.render('urls_index', templateVars);
+//Can send HTML
+app.get("/hello", (req, res) => {
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 //Renders the urls_new view
@@ -28,72 +29,64 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-//Deletes a set of urls
-app.post("/urls/:id/delete", (req, res) => {
-  const id = req.params.id;
-  console.log(id)
-  console.log(urlDatabase[id])
-  delete(urlDatabase[id])
-  console.log(urlDatabase)
-  res.redirect('/urls');
-});
-
-// Saves a shortURL 
-app.post("/urls", (req, res) => {
-  const longURL = req.body.longURL;
-
-  const id = generateRandomString(6);
-  urlDatabase[id] = longURL;
-  res.redirect(`urls/${id}`);
-});
-
-//Id request
-app.get("/urls/:id", (req, res) => {
-  const id = req.params.id;
-  const longURL = urlDatabase[id];
-  console.log(longURL);
-  const templateVars = { id, longURL };
-  res.render("urls_show", templateVars);
-});
-
-//Edit's a URL
-app.post("/urls/:id", (req, res) => {
-  console.log(res.req.url)
-  const id = res.req.url;
-
-  if(id)
-
-  console.log(urlDatabase)
-  res.redirect(id);
-});
-
-//will send the ulrDatabase object to the client
+// will send the ulrDatabase object to the client
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-//Can use HTML
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
+//This POST Route is used to create new Short and Long URL in the 
+//url database
+app.post("/urls", (req, res) => {
+  const longURL = req.body["longURL"];
+  const shortURL = generateRandomString(6);
+  urlDatabase[shortURL] = longURL;
+  res.redirect(`/urls/${shortURL}`)
+});
+
+// Id request
+app.get("/urls", (req, res) => {
+  const templateVars = { urls: urlDatabase };
+  res.render("urls_index", templateVars);
+});
+
+//Goes to the id page 
+//Goes to edit page
+app.get("/urls/:id", (req, res) => {
+  const shortURL = req.params.id;
+  const longURL = urlDatabase[shortURL];
+  const templateVars = { id: shortURL, longURL: longURL };
+  res.render("urls_show", templateVars);
+});
+
+//Edit long url returned from edit button
+app.post("/urls/:id/edit", (req, res) => {
+  const shortURL = req.params.id;
+  console.log(shortURL)
+  urlDatabase[shortURL]= req.body.longURL
+  res.redirect("/urls");
+});
+
+//Will the request to delete a url from the server
+app.post("/urls/:id/delete", (req, res) => {
+  const shortURL = req.params.id;
+  delete urlDatabase[shortURL]
+  res.redirect("/urls");
 });
 
 app.get("/u/:id", (req, res) => {
-  const id = req.params.id;
-  const longURL = urlDatabase[id];
+  const longURL = urlDatabase[req.params.id]
+  if(!longURL){
+    res.send("That URL was not found")
+  }
   res.redirect(longURL);
 });
 
-
-
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`Example app listening on port 8080!`);
 });
 
 
-
-
-
-//I spent way to long on this assignment, this was taken from slingacademy.com
+// //I spent way to long on this assignment, this was taken from slingacademy.com
 const generateRandomString = (length) => {
   let result = '';
   const characters =
