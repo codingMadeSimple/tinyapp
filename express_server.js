@@ -4,21 +4,32 @@ const PORT = 8080; // default port 8080
 // const morgan = require('morgan')
 const cookieParser = require('cookie-parser');
 app.set("view engine", "ejs");
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
-const userDatabase = {
-
+//New user database
+const users = {
+  abc: {
+    id: "abc",
+    email: "a@a.ca",
+    password: "1234",
+  },
+  def: {
+    id: "def",
+    email: "b@b.ca",
+    password: "5678",
+  },
 };
 
+//This is based off of cookies
+const userDatabase = {
+};
 
-//Imported modules
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-// app.use(morgan('dev'));
 
 
 //Says hello to the client
@@ -53,10 +64,9 @@ app.post("/urls", (req, res) => {
 // Id request
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
-  if (userDatabase["username"]) {
-
-    templateVars["username"] = res.req.cookies;
-    console.log(templateVars);
+  if (users["user"]) {
+    templateVars["user"] = users.user;
+    console.log(templateVars)
     res.render("protected", templateVars);
   } else {
     res.render("urls_index", templateVars);
@@ -88,12 +98,8 @@ app.post("/urls/:id/delete", (req, res) => {
 
 //Will set cookie named 'username'
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
-  // console.log(req.body.username);
-  userDatabase["username"] = req.body.username;
-  // console.log(userDatabase)
-  // console.log(req.body.username)
-  // console.log(username)
+  res.cookie('user', req.body.user);
+  users["user"] = req.body.user;
   res.redirect("/urls");
 });
 
@@ -106,27 +112,58 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port 8080!`);
-});
-
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
-  // console.log(req.body.username);
-  userDatabase["username"] = req.body.username;
-  // console.log(userDatabase)
-  // console.log(req.body.username)
-  // console.log(username)
+  res.cookie('user', req.body.user);
+  users["user"] = req.body.user;
   res.redirect("/urls");
 });
 
 //Logout post from protected
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
-  delete userDatabase["username"]
+  res.clearCookie("user");
+  delete users["user"];
+  res.redirect("/urls");
+});
+
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+//Creates a newUser Object
+app.post("/register", (req, res) => {
+  let foundUser = null;
+  const email = req.body["email"];
+  const password = req.body["password"];
+  const id = generateRandomString(6);
+  //Loop through users to see if exist
+  for (const userId in users) {
+    const user = users[userId];
+    if (user.id === id) {
+      foundUser = user;
+    }
+  }
+
+  //New user object
+  const newUser = {
+    id: id,
+    email: email,
+    password: password,
+  };
+
+  // Set user_id as cookie value based on newUser.id and save to newUser
+  const user_id = res.cookie("userCookie", newUser.id);
+  newUser["userCookie"] = user_id
+
+  //This will add the newUser to the users database
+  users["user"] = newUser
 
   res.redirect("/urls");
 });
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port 8080!`);
+});
+
 // //I spent way to long on this assignment, this was taken from slingacademy.com
 const generateRandomString = (length) => {
   let result = '';
