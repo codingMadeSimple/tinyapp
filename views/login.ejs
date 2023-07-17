@@ -19,12 +19,12 @@
   </head>
 
   <body>
-
+    <%- include('partials/_header') %>
     <main style="margin: 1em;">
       <h3>Create TinyURL</h3>
       <form action="/login" method="POST">
         <div>
-          <label for="emailAddress">Please input your email address: </label>
+          <label for="email">Please input your email address: </label>
           <input
             class="form-control"
             type="email"

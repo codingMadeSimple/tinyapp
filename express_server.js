@@ -108,32 +108,58 @@ app.get("/u/:id", (req, res) => {
 });
 
 
-app.get("/login", (req, res) =>{
+app.get("/login", (req, res) => {
 
-  res.render("login")
+  res.render("login");
+});
+
+app.post("/login", (req, res) => {
+  const email = req.body["email"];
+  const password = req.body["password"];
+  console.log(email, password);
+  emailFound = null;
+  //Check if email or password were empty
+  if (email === "" || password === "") {
+    res.status(400);
+    return res.send('Please input both email and password.');
+  }
+
+  for (const user in users) {
+    //Checks if user inputted email is the same as any in the users database
+    if (users[user]["email"] !== email) {
+      return res.status(403);
+    } else if (users[user]["email"] === email && users[user]["password"] !== password) {
+      return res.status(403);
+    } else if (users[user]["email"] === email && users[user]["password"] === password) {
+      res.cookie("user_id", users[user]["id"]);
+      const templateVars = { urls: urlDatabase };
+      templateVars["user"] = users[user];
+      res.render("protected", templateVars)
+    }
+  }
+  res.redirect("/login");
+});
+
+app.get("/protected", (req, res) => {
+
+  res.render("protected")
 })
-
-app.post("/login", (req, res) =>{
-
-  res.redirect("/login")
-})
-
-
 
 //Logout post from protected
 app.post("/logout", (req, res) => {
-  res.clearCookie("user");
+  console.log(users["user"])
   delete users["user"];
-  res.redirect("/urls");
+  res.clearCookie("user_id");
+  res.redirect("/login");
 });
 
 app.get("/register", (req, res) => {
   res.render("register");
 });
 
+
 //Creates a newUser Object
 app.post("/register", (req, res) => {
-  let foundUser = null;
 
   const email = req.body["email"];
   const password = req.body["password"];
@@ -158,16 +184,14 @@ app.post("/register", (req, res) => {
     email: email,
     password: password,
   };
-  // Set user_id as cookie value based on newUser.id and save to newUser
-  const user_id = res.cookie("userCookie", newUser.id);
-  newUser["userCookie"] = user_id;
+  // Set user_id cookie from value based on newUser.id
+  res.cookie("user_id", newUser.id);
   //This will add the newUser to the users database
   users["user"] = newUser;
   res.redirect("/urls");
 });
 
-
-
+//Server is listening
 app.listen(PORT, () => {
   console.log(`Example app listening on port 8080!`);
 });
@@ -183,17 +207,3 @@ const generateRandomString = (length) => {
   }
   return result;
 };
-
-
-//Will set cookie named 'username'
-// app.post("/login", (req, res) => {
-//   res.cookie('user', req.body.user);
-//   users["user"] = req.body.user;
-//   res.redirect("/urls");
-// });
-
-// app.post("/login", (req, res) => {
-//   res.cookie('user', req.body.user);
-//   users["user"] = req.body.user;
-//   res.redirect("/urls");
-// });
