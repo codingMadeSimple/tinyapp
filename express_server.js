@@ -96,12 +96,7 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-//Will set cookie named 'username'
-app.post("/login", (req, res) => {
-  res.cookie('user', req.body.user);
-  users["user"] = req.body.user;
-  res.redirect("/urls");
-});
+
 
 //If they input a url that is not in the database
 app.get("/u/:id", (req, res) => {
@@ -112,11 +107,18 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
-app.post("/login", (req, res) => {
-  res.cookie('user', req.body.user);
-  users["user"] = req.body.user;
-  res.redirect("/urls");
-});
+
+app.get("/login", (req, res) =>{
+
+  res.render("login")
+})
+
+app.post("/login", (req, res) =>{
+
+  res.redirect("/login")
+})
+
+
 
 //Logout post from protected
 app.post("/logout", (req, res) => {
@@ -137,36 +139,34 @@ app.post("/register", (req, res) => {
   const password = req.body["password"];
   const id = generateRandomString(6);
 
-  if (email === "" || password === ""){
+  if (email === "" || password === "") {
     res.status(400);
-    return res.send('Please input both email and password.')
+    return res.send('Please input both email and password.');
   }
 
   //Loop through users to see if exist
   for (const user in users) {
     //Checks if user inputted email is the same as any in the users database
     if (users[user]["email"] === email) {
-      res.status(400)
-      return res.send("Unfortunately that email is already in our database plase input a new one.")
+      res.status(400);
+      return res.send("Unfortunately that email is already in our database plase input a new one.");
     }
   }
-
   //New user object
   const newUser = {
     id: id,
     email: email,
     password: password,
   };
-
   // Set user_id as cookie value based on newUser.id and save to newUser
   const user_id = res.cookie("userCookie", newUser.id);
   newUser["userCookie"] = user_id;
-
   //This will add the newUser to the users database
   users["user"] = newUser;
-
   res.redirect("/urls");
 });
+
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port 8080!`);
@@ -185,3 +185,15 @@ const generateRandomString = (length) => {
 };
 
 
+//Will set cookie named 'username'
+// app.post("/login", (req, res) => {
+//   res.cookie('user', req.body.user);
+//   users["user"] = req.body.user;
+//   res.redirect("/urls");
+// });
+
+// app.post("/login", (req, res) => {
+//   res.cookie('user', req.body.user);
+//   users["user"] = req.body.user;
+//   res.redirect("/urls");
+// });
