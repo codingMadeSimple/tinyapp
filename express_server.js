@@ -8,8 +8,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 
 //New user database
@@ -47,10 +53,13 @@ app.get("/hello", (req, res) => {
 //Renders the urls_new view
 app.get("/urls/new", (req, res) => {
   for(const user in users){
+    console.log(user)
+    console.log(users[user]["loggedIn"])
     if(req.cookies.user_id === user && users[user]["loggedIn"] === true){
       res.render("urls_new");
     }
   }
+  // console.log(urlDatabase)
   res.redirect("/register")
 });
 
@@ -67,6 +76,7 @@ app.post("/urls", (req, res) => {
       res.send("It doens't seem that you are logged in. Only registered members can shorten a URL")
     }
   }
+  console.log(req)
   const longURL = req.body["longURL"];
   const shortURL = generateRandomString(6);
   urlDatabase[shortURL] = longURL;
@@ -75,7 +85,12 @@ app.post("/urls", (req, res) => {
 
 // Id request
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  for(const key in urlDatabase){
+    console.log(urlDatabase[key].longURL)
+  }
+
+  const templateVars = { urls: urlDatabase["shortURL"] };
+  console.log(templateVars)
   if (users["user"]) {
     users.user[loggedIn]= true
     templateVars["user"] = users.user;
@@ -87,10 +102,14 @@ app.get("/urls", (req, res) => {
 
 //Goes to edit page
 app.get("/urls/:id", (req, res) => {
-  
+// const { b6UTxQ, i3BoGr } = urlDatabase;
   const shortURL = req.params.id;
-  const longURL = urlDatabase[shortURL];
+
+  const longURL = urlDatabase[shortURL].longURL
+console.log(longURL)
+  console.log(urlDatabase[shortURL].longURL)
   const templateVars = { id: shortURL, longURL: longURL };
+  console.log(templateVars)
   res.render("urls_show", templateVars);
 });
 
@@ -150,8 +169,8 @@ app.post("/login", (req, res) => {
     } else if (users[user]["email"] === email && users[user]["password"] === password) {
       users[user]["loggedIn"] = true
       res.cookie("user_id", users[user]["id"]);
-      const templateVars = { urls: urlDatabase };
-      templateVars["user"] = users[user];
+      // const templateVars = { urls: urlDatabase };
+      const templateVars[users] = users[user];
       res.render("protected", templateVars)
     }
   }
