@@ -18,11 +18,13 @@ const users = {
     id: "abc",
     email: "a@a.ca",
     password: "1234",
+    loggedIn: false
   },
   def: {
     id: "def",
     email: "b@b.ca",
     password: "5678",
+    loggedIn: false
   },
 };
 
@@ -44,7 +46,12 @@ app.get("/hello", (req, res) => {
 
 //Renders the urls_new view
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  for(const user in users){
+    if(req.cookies.user_id === user && users[user]["loggedIn"] === true){
+      res.render("urls_new");
+    }
+  }
+  res.redirect("/register")
 });
 
 // will send the ulrDatabase object to the client
@@ -55,6 +62,11 @@ app.get("/urls.json", (req, res) => {
 //This POST Route is used to create new Short and Long URL in the 
 //url database
 app.post("/urls", (req, res) => {
+  for(const user in users){
+    if(req.cookies.user_id !== user){
+      res.send("It doens't seem that you are logged in. Only registered members can shorten a URL")
+    }
+  }
   const longURL = req.body["longURL"];
   const shortURL = generateRandomString(6);
   urlDatabase[shortURL] = longURL;
@@ -65,8 +77,8 @@ app.post("/urls", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   if (users["user"]) {
+    users.user[loggedIn]= true
     templateVars["user"] = users.user;
-    console.log(templateVars);
     res.render("protected", templateVars);
   } else {
     res.render("urls_index", templateVars);
@@ -75,6 +87,7 @@ app.get("/urls", (req, res) => {
 
 //Goes to edit page
 app.get("/urls/:id", (req, res) => {
+  
   const shortURL = req.params.id;
   const longURL = urlDatabase[shortURL];
   const templateVars = { id: shortURL, longURL: longURL };
@@ -99,7 +112,7 @@ app.post("/urls/:id/delete", (req, res) => {
 
 
 //If they input a url that is not in the database
-app.get("/u/:id", (req, res) => {
+app.get(`/u/:id`, (req, res) => {
   const longURL = urlDatabase[req.params.id];
   if (!longURL) {
     res.send("That URL was not found");
@@ -107,16 +120,20 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
-
+//Change this into a function call so get rid of extra code
 app.get("/login", (req, res) => {
-
+  //Checks to see if the value in cookies is equal to the userID
+  for(const user in users){
+    if(req.cookies.user_id === user){
+      res.redirect("/urls")
+    }
+  }
   res.render("login");
 });
 
 app.post("/login", (req, res) => {
   const email = req.body["email"];
   const password = req.body["password"];
-  console.log(email, password);
   emailFound = null;
   //Check if email or password were empty
   if (email === "" || password === "") {
@@ -131,6 +148,7 @@ app.post("/login", (req, res) => {
     } else if (users[user]["email"] === email && users[user]["password"] !== password) {
       return res.status(403);
     } else if (users[user]["email"] === email && users[user]["password"] === password) {
+      users[user]["loggedIn"] = true
       res.cookie("user_id", users[user]["id"]);
       const templateVars = { urls: urlDatabase };
       templateVars["user"] = users[user];
@@ -154,6 +172,11 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
+  for(const user in users){
+    if(req.cookies.user_id === user){
+      res.redirect("/urls")
+    }
+  }
   res.render("register");
 });
 
@@ -183,6 +206,7 @@ app.post("/register", (req, res) => {
     id: id,
     email: email,
     password: password,
+    loggedIn: true
   };
   // Set user_id cookie from value based on newUser.id
   res.cookie("user_id", newUser.id);
@@ -207,3 +231,4 @@ const generateRandomString = (length) => {
   }
   return result;
 };
+
