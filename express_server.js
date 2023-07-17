@@ -66,7 +66,7 @@ app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   if (users["user"]) {
     templateVars["user"] = users.user;
-    console.log(templateVars)
+    console.log(templateVars);
     res.render("protected", templateVars);
   } else {
     res.render("urls_index", templateVars);
@@ -132,14 +132,22 @@ app.get("/register", (req, res) => {
 //Creates a newUser Object
 app.post("/register", (req, res) => {
   let foundUser = null;
+
   const email = req.body["email"];
   const password = req.body["password"];
   const id = generateRandomString(6);
+
+  if (email === "" || password === ""){
+    res.status(400);
+    return res.send('Please input both email and password.')
+  }
+
   //Loop through users to see if exist
-  for (const userId in users) {
-    const user = users[userId];
-    if (user.id === id) {
-      foundUser = user;
+  for (const user in users) {
+    //Checks if user inputted email is the same as any in the users database
+    if (users[user]["email"] === email) {
+      res.status(400)
+      return res.send("Unfortunately that email is already in our database plase input a new one.")
     }
   }
 
@@ -152,10 +160,10 @@ app.post("/register", (req, res) => {
 
   // Set user_id as cookie value based on newUser.id and save to newUser
   const user_id = res.cookie("userCookie", newUser.id);
-  newUser["userCookie"] = user_id
+  newUser["userCookie"] = user_id;
 
   //This will add the newUser to the users database
-  users["user"] = newUser
+  users["user"] = newUser;
 
   res.redirect("/urls");
 });
