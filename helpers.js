@@ -1,16 +1,4 @@
-const users = {
-  abc: {
-    id: "abc",
-    email: "a@a.ca",
-    password: "1234",
-  },
-  def: {
-    id: "def",
-    email: "b@b.ca",
-    password: "5678",
-  },
-};
-
+//A function that will return the user object with a matching email
 const getUserByEmail = function(email, database) {
   for (const user in database) {
     if (database[user]["email"] === email) {
@@ -19,8 +7,33 @@ const getUserByEmail = function(email, database) {
   }
 };
 
+// //I spent way to long on this assignment, this was taken from slingacademy.com
+const generateRandomString = (length) => {
+  let result = '';
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
 
-console.log(getUserByEmail("a@a.ca", users))
 
+// Function that returns only the urls associated with the userID
+const urlsForUser = function(userID, urlDatabase) {
+  const urlDatabaseUser = {};
+  for (const shortID in urlDatabase) {
+    const longUrlUserID = urlDatabase[shortID].userID;
+    if (longUrlUserID === userID) {
+      urlDatabaseUser[shortID] = { longURL: urlDatabase[shortID].longURL, userID };
+    }
+  }
+  return urlDatabaseUser;
+};
 
-module.exports = { getUserByEmail };
+module.exports = { 
+  getUserByEmail,
+  generateRandomString,
+  urlsForUser
+};

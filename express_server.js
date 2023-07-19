@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require("bcryptjs");
-const morgan = require('morgan')
+const morgan = require('morgan'); //Andy says every server
 const cookieSession = require('cookie-session');
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
@@ -10,9 +10,8 @@ app.use(cookieSession({
   name: 'session',
   keys: ["test"],
 }));
-
-const { getUserByEmail } = require('./helpers.js');
-
+const { getUserByEmail, generateRandomString, urlsForUser } = require('./helpers.js');
+//***Please note I did not create the generate random string function. It was taken from sling academy***//
 
 const urlDatabase = {
   b6UTxQ: {
@@ -44,29 +43,6 @@ const users = {
 };
 
 
-// //I spent way to long on this assignment, this was taken from slingacademy.com
-const generateRandomString = (length) => {
-  let result = '';
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-};
-// Function that returns only the urls associated with the userID
-const urlsForUser = function(userID, urlDatabase) {
-  const urlDatabaseUser = {};
-  for (const shortID in urlDatabase) {
-    const longUrlUserID = urlDatabase[shortID].userID;
-    if (longUrlUserID === userID) {
-      urlDatabaseUser[shortID] = { longURL: urlDatabase[shortID].longURL, userID };
-    }
-  }
-  return urlDatabaseUser;
-};
-
 //Says hello to the client
 app.get("/", (req, res) => {
   res.send("Hello!"); //eventually needs to change
@@ -74,7 +50,6 @@ app.get("/", (req, res) => {
 
 // Id request
 app.get("/urls", (req, res) => {
-  console.log("test", req.session.user_id);
   if (!req.session.user_id) {
     return res.redirect("/login");
   }
@@ -148,7 +123,8 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-//Change this into a function call so get rid of extra code
+
+//Login get-request checks if a user is logged in by their cookies
 app.get("/login", (req, res) => {
   //Checks to see if cookies are defined
   if (req.session.user_id) {
@@ -195,7 +171,7 @@ app.get("/register", (req, res) => {
   }
 });
 
-//Creates a newUser Object
+//Creates a newUser Object with id, email and a hashed password
 app.post("/register", (req, res) => {
 
   const email = req.body.email;
@@ -217,6 +193,7 @@ app.post("/register", (req, res) => {
   if (foundUser) {
     return res.status(400).send("Unfortunately that email is already in our database plase input a different one.");
   }
+
   //New user object
   const newUser = {
     id,
