@@ -1,6 +1,9 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
+const bcrypt = require("bcryptjs");
+const password = "purple-monkey-dinosaur"; // found in the req.body object
+const hashedPassword = bcrypt.hashSync(password, 10);
 // const morgan = require('morgan')
 const cookieParser = require('cookie-parser');
 app.set("view engine", "ejs");
@@ -79,7 +82,7 @@ app.get("/urls", (req, res) => {
   if (!req.cookies.user_id) {
     return res.redirect("/login");
   }
-const urlsOfUser = urlsForUser(req.cookies.user_id, urlDatabase)
+  const urlsOfUser = urlsForUser(req.cookies.user_id, urlDatabase);
 
   const templateVars = { urls: urlsOfUser, user: users[req.cookies.user_id] };
   res.render("urls_index", templateVars);
@@ -111,8 +114,6 @@ app.get("/urls/:id", (req, res) => {
 
 //If they input a url that is not in the database
 app.get("/u/:id", (req, res) => {
-  console.log(req.cookies.user_id);
-
   if (!urlDatabase[req.params.id]) {
     return res.send("That URL was not found");
   }
@@ -143,9 +144,9 @@ app.post("/urls/:id/edit", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   const userID = req.cookies.user_id;
   const shortURL = req.params.id;
-  if(!userID){
+  if (!userID) {
     return res.status(400).send("You need to be logged in and have a valid account to delete your URLS");
-  }else if(userID !== urlDatabase[shortURL].userID){
+  } else if (userID !== urlDatabase[shortURL].userID) {
     return res.status(400).send("Please log in to your account in order to delete this URL");
   }
   delete urlDatabase[shortURL];
@@ -164,6 +165,9 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const passwordCheck = bcrypt.compareSync(password, foundUser.password);
+  // const hashedPassword = bcrypt.hashSync(password, 10);
+
   //Check if email or password were empty
   if (!email || !password) {
     return res.status(400).send('Please input both email and password.');
@@ -180,13 +184,17 @@ app.post("/login", (req, res) => {
     return res.status(404).send("User does not exist");
   }
 
-  if (foundUser.password !== password) {
-    return res.status(400).send("Password incorrect");
+
+  if (!passwordCheck) {
+    return res.status(400).send("Incorrect password");
   }
+
+
 
   res.cookie("user_id", foundUser.id);
   res.redirect("/urls");
-});
+}
+);
 
 app.get("/register", (req, res) => {
   if (req.cookies.user_id) {
@@ -199,11 +207,12 @@ app.get("/register", (req, res) => {
 //Creates a newUser Object
 app.post("/register", (req, res) => {
 
-  const email = req.body["email"];
-  const password = req.body["password"];
+  const email = req.body.email;
+  const password = req.body.password;
   const id = generateRandomString(6);
+  const hashedPassword = bcrypt.hashSync(password, 10);
 
-  if (email === "" || password === "") {
+  if (!email || !password) {
     return res.status(400).send('Please input both email and password.');
   }
 
@@ -214,16 +223,14 @@ app.post("/register", (req, res) => {
       foundUser = users[userID];
     }
   }
-
   if (foundUser) {
     return res.status(400).send("Unfortunately that email is already in our database plase input a new one.");
   }
-
   //New user object
   const newUser = {
     id,
     email,
-    password
+    password: hashedPassword
   };
   //This will add the newUser to the users database
   users[id] = newUser;
