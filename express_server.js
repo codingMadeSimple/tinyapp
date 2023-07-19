@@ -90,7 +90,7 @@ app.get("/u/:id", (req, res) => {
   res.redirect(urlDatabase[req.params.id].longURL);
 });
 
-//This POST Route is used to create new Short and Long URL in the 
+//This POST Route is used to create new Short and Long URL in the
 //url database
 app.post("/urls", (req, res) => {
   if (!req.session.user_id) {

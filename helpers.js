@@ -32,7 +32,7 @@ const urlsForUser = function(userID, urlDatabase) {
   return urlDatabaseUser;
 };
 
-module.exports = { 
+module.exports = {
   getUserByEmail,
   generateRandomString,
   urlsForUser
