@@ -1,12 +1,3 @@
-//A function that will return the user object with a matching email
-const getUserByEmail = function(email, database) {
-  for (const user in database) {
-    if (database[user]["email"] === email) {
-      return user;
-    }
-  }
-};
-
 // //I spent way to long on this assignment, this was taken from slingacademy.com
 const generateRandomString = (length) => {
   let result = '';
@@ -18,7 +9,6 @@ const generateRandomString = (length) => {
   }
   return result;
 };
-
 
 // Function that returns only the urls associated with the userID
 const urlsForUser = function(userID, urlDatabase) {
@@ -33,7 +23,6 @@ const urlsForUser = function(userID, urlDatabase) {
 };
 
 module.exports = {
-  getUserByEmail,
   generateRandomString,
   urlsForUser
 };

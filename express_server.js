@@ -10,7 +10,7 @@ app.use(cookieSession({
   name: 'session',
   keys: ["test"],
 }));
-const { getUserByEmail, generateRandomString, urlsForUser } = require('./helpers.js');
+const { generateRandomString, urlsForUser } = require('./helpers.js');
 //***Please note I did not create the generate random string function. It was taken from sling academy***//
 
 const urlDatabase = {
@@ -45,7 +45,10 @@ const users = {
 
 //Says hello to the client
 app.get("/", (req, res) => {
-  res.send("Hello!"); //eventually needs to change
+  if(req.session.user_id){
+    return res.redirect("/urls")
+  }
+  res.redirect("/login")
 });
 
 // Id request
@@ -74,6 +77,9 @@ app.get("/urls/:id", (req, res) => {
     return res.status(400).send("Please login to see your urls.");
   }
   const shortURL = req.params.id;
+  if(!urlDatabase[shortURL]){
+    return res.status(400).send("that short URL does not exist.");
+  }
   if (userID !== urlDatabase[shortURL].userID) {
     return res.status(400).send("Sorry, you are not authorized to view this page.");
   }
@@ -152,8 +158,8 @@ app.post("/login", (req, res) => {
   if (!foundUser) {
     return res.status(404).send("User does not exist");
   }
-  const hashedPassword = bcrypt.hashSync(foundUser.password, 10);
-  const passwordCheck = bcrypt.compareSync(password, hashedPassword);
+
+  const passwordCheck = bcrypt.compareSync(password, foundUser.password);
 
   if (!passwordCheck) {
     return res.status(400).send("Incorrect password");
